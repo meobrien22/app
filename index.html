@@ -1,13 +1,713 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AE Discovery Engine</title>
-    <script type="module" crossorigin src="./assets/index-BgXfK5_q.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DAtLcgFT.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AE Discovery Engine - Standalone Demo</title>
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-700: #1d4ed8;
+      --blue-50: #eff6ff;
+      --green: #059669;
+      --green-50: #ecfdf5;
+      --orange: #ea580c;
+      --orange-50: #fff7ed;
+      --purple: #7c3aed;
+      --purple-50: #f5f3ff;
+      --slate-950: #020617;
+      --slate-800: #1e293b;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --white: #ffffff;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--slate-950);
+      background: var(--slate-50);
+    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-rows: 68px 1fr; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 22px;
+      border-bottom: 1px solid var(--slate-200);
+      background: rgba(255,255,255,.96);
+      backdrop-filter: blur(10px);
+    }
+    .brand { min-width: 300px; }
+    .brand h1 { margin: 0; color: var(--blue); font-size: 24px; line-height: 1; }
+    .brand p { margin: 5px 0 0; color: var(--slate-500); font-size: 12px; }
+    .header-chip {
+      margin-left: auto;
+      padding: 10px 16px;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      background: var(--blue-50);
+      color: var(--slate-800);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .search {
+      width: min(320px, 22vw);
+      border: 0;
+      border-radius: 8px;
+      background: var(--slate-100);
+      padding: 12px 14px;
+      outline: none;
+    }
+    .shell { display: grid; grid-template-columns: 270px minmax(0, 1fr) 310px; min-height: calc(100vh - 68px); }
+    aside {
+      border-right: 1px solid var(--slate-200);
+      background: var(--white);
+      padding: 18px;
+      overflow: auto;
+    }
+    .right {
+      border-right: 0;
+      border-left: 1px solid var(--slate-200);
+    }
+    main { padding: 24px; overflow: auto; }
+    .nav-title {
+      margin: 14px 0 8px;
+      color: var(--slate-500);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .nav-btn, .tab-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      padding: 11px 12px;
+      color: #334155;
+      font-weight: 700;
+      text-align: left;
+    }
+    .nav-btn:hover, .tab-btn:hover, .nav-btn.active, .tab-btn.active {
+      background: var(--blue-50);
+      border-color: #bfdbfe;
+      color: var(--blue-700);
+    }
+    .page { display: none; max-width: 1180px; margin: 0 auto; }
+    .page.active { display: block; }
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .two-col { grid-template-columns: 1.1fr .9fr; }
+    .card {
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+    .card.compact { padding: 14px; }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    h2 { margin: 0; font-size: clamp(26px, 3vw, 38px); }
+    h3 { margin: 0; font-size: 20px; }
+    h4 { margin: 0; font-size: 15px; }
+    p { color: var(--slate-600); line-height: 1.55; }
+    .muted { color: var(--slate-500); font-size: 13px; }
+    .metric {
+      border-radius: 10px;
+      border: 1px solid #bfdbfe;
+      background: var(--blue-50);
+      padding: 18px;
+      min-height: 132px;
+    }
+    .metric.green { border-color: #bbf7d0; background: var(--green-50); }
+    .metric.orange { border-color: #fed7aa; background: var(--orange-50); }
+    .metric.purple { border-color: #ddd6fe; background: var(--purple-50); }
+    .metric strong { display: block; font-size: 34px; color: var(--slate-950); }
+    .metric span { color: var(--blue-700); font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; }
+    .metric small { display: block; margin-top: 8px; color: var(--slate-600); font-weight: 700; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      background: var(--slate-100);
+      padding: 6px 10px;
+      color: var(--slate-700);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: var(--blue);
+      color: white;
+      padding: 11px 15px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+    .btn:hover { background: var(--blue-700); }
+    .btn.secondary { background: white; border-color: var(--slate-200); color: var(--slate-800); }
+    .btn.green { background: var(--green); }
+    .btn.orange { background: var(--orange); }
+    .list { display: grid; gap: 10px; }
+    .row {
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      background: var(--slate-50);
+      padding: 14px;
+    }
+    .row.clickable:hover { border-color: #bfdbfe; background: var(--blue-50); }
+    .row-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .bar {
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--slate-100);
+    }
+    .bar > span { display: block; height: 100%; border-radius: 999px; background: var(--blue); }
+    .bar.green > span { background: var(--green); }
+    .bar.orange > span { background: var(--orange); }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { border-bottom: 1px solid var(--slate-200); padding: 12px 8px; text-align: left; font-size: 13px; }
+    .table th { color: var(--slate-500); text-transform: uppercase; font-size: 11px; letter-spacing: .06em; }
+    .account-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      background: var(--white);
+      margin-bottom: 16px;
+    }
+    .account-tabs .tab-btn { width: auto; white-space: nowrap; }
+    .stage-page { display: none; }
+    .stage-page.active { display: block; }
+    .brief-scroll { max-height: 230px; overflow-y: auto; padding-right: 8px; }
+    .right .card { box-shadow: none; margin-bottom: 14px; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(2,6,23,.52);
+      z-index: 50;
+      overflow: auto;
+    }
+    .modal.open { display: flex; }
+    .modal-card {
+      width: min(1080px, 100%);
+      border-radius: 16px;
+      background: white;
+      box-shadow: 0 24px 80px rgba(0,0,0,.25);
+      border: 1px solid var(--slate-200);
+      overflow: hidden;
+    }
+    .modal-head {
+      position: sticky;
+      top: 0;
+      background: white;
+      border-bottom: 1px solid var(--slate-200);
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      z-index: 2;
+    }
+    .modal-body { padding: 20px; }
+    .close {
+      border: 1px solid var(--slate-200);
+      background: white;
+      color: var(--slate-600);
+      border-radius: 999px;
+      width: 38px;
+      height: 38px;
+      font-weight: 900;
+    }
+    .persona-switcher { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .question {
+      border: 1px solid #bfdbfe;
+      background: var(--blue-50);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    textarea, input, select {
+      width: 100%;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 10px 12px;
+      outline: none;
+      background: white;
+    }
+    textarea:focus, input:focus, select:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    .construction {
+      border: 1px solid #bbf7d0;
+      background: var(--green-50);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .hide-mobile { display: block; }
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 230px minmax(0, 1fr); }
+      .right { display: none; }
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      header { flex-wrap: wrap; height: auto; }
+      .brand { min-width: auto; width: 100%; }
+      .search { width: 100%; }
+      .header-chip { margin-left: 0; }
+      .shell { grid-template-columns: 1fr; }
+      aside { display: none; }
+      main { padding: 14px; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <h1>AE Discovery Engine</h1>
+        <p>Standalone HTML demo - customer discovery operating system</p>
+      </div>
+      <div class="header-chip" id="headerChip">Portfolio home</div>
+      <button class="btn secondary" onclick="openAccountList()">List of accounts</button>
+      <input id="searchBox" class="search" placeholder="Search discovery" oninput="searchAccounts(this.value)" />
+    </header>
+
+    <div class="shell">
+      <aside>
+        <div class="nav-title">Portfolio</div>
+        <button class="nav-btn active" data-page="home" onclick="showPage('home')">Dashboard</button>
+        <button class="nav-btn" data-page="accounts" onclick="showPage('accounts')">Accounts</button>
+        <button class="nav-btn" data-page="vteam" onclick="showPage('vteam')">V-Team Dashboard</button>
+        <button class="nav-btn" data-page="partners" onclick="showPage('partners')">Partners</button>
+        <button class="nav-btn" data-page="news" onclick="showPage('news')">News Center</button>
+        <button class="nav-btn" data-page="coach" onclick="showPage('coach')">AI Coaching</button>
+
+        <div class="nav-title">Open account workspaces</div>
+        <div id="openWorkspaces" class="list"></div>
+      </aside>
+
+      <main>
+        <section id="home" class="page active"></section>
+        <section id="accounts" class="page"></section>
+        <section id="account" class="page"></section>
+        <section id="vteam" class="page"></section>
+        <section id="partners" class="page"></section>
+        <section id="news" class="page"></section>
+        <section id="coach" class="page"></section>
+      </main>
+
+      <aside class="right">
+        <h3>Discovery Command Center</h3>
+        <div id="commandCenter"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="renewalModal" class="modal"></div>
+  <div id="accountListModal" class="modal"></div>
+  <div id="personaModal" class="modal"></div>
+
+  <script>
+    const accounts = [
+      account('upwork','Upwork','Professional Services','ME5','Copilot + Entra','1 quarter',89,86,81,0,150,['Identity complexity','Hybrid work friction','AI productivity'],['external collaboration','secure access','talent operations']),
+      account('toast','Toast','Retail','ME5','ME5 security + Copilot','1 quarter',88,82,73,12,925,['AI productivity','Security risk','Manual reporting'],['restaurant operations','customer service automation','secure frontline']),
+      account('freshworks','Freshworks','Business Services','ME3','Copilot + Power BI','1 quarter',87,84,86,8,650,['AI productivity','Manual reporting','Data silos'],['support productivity','customer health','dashboard gaps']),
+      account('procore','Procore','Construction','ME3','ME5 + frontline operations','2 quarters',85,85,81,6,425,['Frontline operations','Data silos','Device management'],['field productivity','project visibility','mobile endpoints']),
+      account('cloudflare','Cloudflare','Cybersecurity','ME3','Security + Copilot','2 quarters',84,86,87,4,500,['Security risk','Identity complexity','AI productivity'],['threat visibility','identity controls','AI-assisted operations']),
+      account('appfolio','AppFolio','Real Estate','ME3','ME5 + Copilot readiness','2 quarters',83,88,83,0,750,['AI productivity','Manual reporting','Data silos'],['automation','dashboards','knowledge work']),
+      account('bill','BILL','Financial Services','ME3','ME5 + governance','2 quarters',82,84,81,4,200,['Compliance pressure','Manual reporting','AI productivity'],['finance workflow','audit readiness','approval automation']),
+      account('smartsheet','Smartsheet','Software','ME3','Copilot + Teams Premium','6 months',81,83,84,5,500,['Hybrid work friction','Manual reporting','AI productivity'],['project collaboration','meeting follow-up','work orchestration']),
+      account('blackline','BlackLine','Financial Services','ME5','Copilot + Fabric readiness','3 quarters',80,83,81,3,350,['Manual reporting','Data silos','Compliance pressure'],['close process','forecast confidence','governed analytics']),
+      account('duolingo','Duolingo','Education','ME3','Copilot + Fabric','2 quarters',79,82,82,5,625,['AI productivity','Data silos','Change management'],['learning analytics','content operations','AI experimentation']),
+      account('warby','Warby Parker','Retail','ME3','Frontline + Copilot','2 quarters',78,78,77,8,575,['Frontline operations','Device management','Hybrid work friction'],['store operations','field devices','customer experience']),
+      account('docusign','DocuSign','Financial Services','ME3','Copilot + governance','6 months',77,80,79,6,450,['Manual reporting','Compliance pressure','AI productivity'],['agreement workflow','contract intelligence','governance'])
+    ];
+
+    const partners = [
+      { name:'Avanade', type:'Global systems integrator', fit:92, owner:'Partner Development / Channel Lead', accounts:['Toast','BILL','Smartsheet'], value:'Copilot adoption workshops, change management, executive-ready proof.' },
+      { name:'Crayon', type:'Cloud economics and licensing advisory', fit:88, owner:'SMB Channel Lead', accounts:['Procore','AppFolio','Freshworks'], value:'SMB packaging, procurement clarity, managed service motion.' },
+      { name:'Insight', type:'Solution integrator', fit:86, owner:'Security SSP + Partner Lead', accounts:['Cloudflare','Warby Parker','Toast'], value:'Security workshops, endpoint readiness, implementation planning.' },
+      { name:'Slalom', type:'Business transformation partner', fit:84, owner:'Data and AI Specialist', accounts:['BlackLine','Duolingo'], value:'Data strategy, Fabric readiness, executive workshops.' },
+      { name:'Planet Technologies', type:'Microsoft services partner', fit:81, owner:'Security SSP', accounts:['DocuSign','BILL'], value:'Governance, compliance, identity execution support.' }
+    ];
+
+    const newsSignals = [
+      { type:'AI adoption', account:'Smartsheet', partner:'Avanade', headline:'Work management buyers are asking for governed AI workflows, not isolated pilots.', action:'Open Smartsheet and confirm the Copilot adoption owner.' },
+      { type:'Frontline operations', account:'Toast', partner:'Insight', headline:'Retail accounts show stronger signals around frontline execution and secure service operations.', action:'Open Toast and validate frontline workflow pain.' },
+      { type:'Security pressure', account:'Cloudflare', partner:'Insight', headline:'Security conversations are moving from tool coverage to identity, governance, and measurable risk reduction.', action:'Open Cloudflare and map the CISO proof path.' },
+      { type:'Data modernization', account:'BlackLine', partner:'Slalom', headline:'Finance accounts need trusted reporting and cleaner executive dashboards before AI can scale.', action:'Open BlackLine and run CFO data-readiness discovery.' },
+      { type:'Partner opportunity', account:'AppFolio', partner:'Crayon', headline:'SMB channel motions work best when discovery translates into a simple implementation and adoption package.', action:'Open AppFolio and attach partner next steps.' }
+    ];
+
+    const personas = [
+      { role:'CEO', lens:'Growth, market position, executive confidence', question:'Which business outcome would make this transformation worth executive attention?' },
+      { role:'CFO', lens:'Business case, risk, forecast confidence', question:'What evidence would make the renewal or expansion financially defensible?' },
+      { role:'COO', lens:'Operating rhythm, process ownership, frontline execution', question:'Where do handoffs slow the customer or employee experience today?' },
+      { role:'CIO', lens:'Platform simplification, security, integration', question:'Which systems or access patterns make the current environment harder to govern?' },
+      { role:'CISO', lens:'Risk visibility, identity control, incident readiness', question:'Which risk is most difficult to see, prioritize, or explain to executives?' },
+      { role:'CAIO', lens:'AI use-case portfolio, responsible AI, adoption measurement', question:'Which AI use case is highest value but blocked by governance, data, or adoption?' },
+      { role:'CHRO', lens:'Change readiness, training, employee experience', question:'Which teams need enablement before the technology can create real behavior change?' }
+    ];
+
+    let activePage = 'home';
+    let activeAccount = accounts[0];
+    let openAccounts = [activeAccount.id];
+    let activeStage = 'dashboard';
+
+    function account(id,name,industry,current,target,renewal,priority,discovery,opportunity,risk,seats,pains,keywords) {
+      const stakeholders = [
+        { name:'Alex Morgan', role:'CEO', influence:'Executive Sponsor', sentiment:'Supportive' },
+        { name:'Jordan Lee', role:'CFO', influence:'Economic Buyer', sentiment:'Neutral' },
+        { name:'Casey Patel', role:'CIO', influence:'Technical Owner', sentiment:'Supportive' },
+        { name:'Riley Chen', role:'COO', influence:'Business Owner', sentiment:'Supportive' },
+        { name:'Taylor Brooks', role:'CISO', influence:'Risk Owner', sentiment:'Neutral' }
+      ];
+      const price = current === 'ME5' ? '$57/user/month' : '$36/user/month';
+      return {
+        id,name,industry,current,target,renewal,priority,discovery,opportunity,risk,seats,pains,keywords,price,stakeholders,
+        trigger:`${industry} signal: ${keywords[0]} and ${keywords[1]} are creating a timely Microsoft discovery opening.`,
+        notes:`${name} has discovery signals around ${pains.join(', ').toLowerCase()} with a strong opportunity to map business priorities to Microsoft outcomes.`,
+        tools:['Mixed productivity stack','point reporting tools','security point solutions'],
+        blockers:['Need tighter success criteria','Confirm executive owner','Validate procurement path'],
+        nextSteps:['Confirm executive sponsor','Run MCEM discovery workshop','Map persona-specific next-best action'],
+        addOns:[
+          { name:'Copilot', score: Math.min(95, opportunity + 8), use:'AI productivity proof and adoption planning' },
+          { name:'Power BI', score: Math.min(92, opportunity + 3), use:'Dashboard, reporting, and decision visibility' },
+          { name:'Fabric', score: Math.max(72, opportunity - 4), use:'Unified data and analytics readiness' },
+          { name:'Teams Premium', score: Math.max(68, opportunity - 8), use:'Meeting intelligence and follow-through' }
+        ]
+      };
+    }
+
+    function render() {
+      renderHome();
+      renderAccounts();
+      renderAccount();
+      renderVTeam();
+      renderPartners();
+      renderNews();
+      renderCoach();
+      renderCommandCenter();
+      renderOpenWorkspaces();
+      showPage(activePage, true);
+    }
+
+    function showPage(page, silent=false) {
+      activePage = page;
+      document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+      document.getElementById(page).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
+      document.getElementById('headerChip').textContent = page === 'account' ? `Account workspace: ${activeAccount.name}` : 'Portfolio home';
+      if (!silent) window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openAccount(id) {
+      activeAccount = accounts.find(a => a.id === id) || accounts[0];
+      if (!openAccounts.includes(id)) openAccounts.push(id);
+      activeStage = 'dashboard';
+      render();
+      showPage('account');
+    }
+
+    function closeWorkspace(id) {
+      openAccounts = openAccounts.filter(item => item !== id);
+      if (activeAccount.id === id) activeAccount = accounts.find(a => openAccounts.includes(a.id)) || accounts[0];
+      render();
+    }
+
+    function renderOpenWorkspaces() {
+      const el = document.getElementById('openWorkspaces');
+      el.innerHTML = openAccounts.length ? openAccounts.map(id => {
+        const acc = accounts.find(a => a.id === id);
+        return `<div class="row compact"><div class="row-head"><button class="btn secondary" onclick="openAccount('${id}')">${acc.name}</button><button class="close" onclick="closeWorkspace('${id}')">x</button></div></div>`;
+      }).join('') : '<p class="muted">Open an account from Accounts or the priority stack.</p>';
+    }
+
+    function renderHome() {
+      const renewalAccounts = [...accounts].filter(a => /1 quarter|2 quarters|6 months/i.test(a.renewal)).sort((a,b) => b.priority-a.priority).slice(0,10);
+      document.getElementById('home').innerHTML = `
+        <div class="card">
+          <div class="row-head">
+            <div>
+              <p class="eyebrow">Morning AE dashboard</p>
+              <h2>What needs my attention today?</h2>
+              <p>A simple operating view for quota, priority accounts, renewal watch, reminders, and quick AI coaching.</p>
+            </div>
+            <button class="btn" onclick="openAccount('${accounts[0].id}')">Open top account -></button>
+          </div>
+          <div class="grid grid-4" style="margin-top:18px">
+            <div class="metric green"><strong>$50M</strong><span>Annual quota</span><small>16% discovery coverage</small></div>
+            <div class="metric"><strong>13</strong><span>Act-now accounts</span><small>Prioritized for this week</small></div>
+            <button class="metric orange" onclick="openRenewalModal()" style="text-align:left"><strong>${renewalAccounts.length}</strong><span>Renewal watch</span><small>Click for top 10</small></button>
+            <div class="metric purple"><strong>7</strong><span>Strong opportunities</span><small>1 risk watch</small></div>
+          </div>
+        </div>
+        <div class="grid two-col" style="margin-top:16px">
+          <div class="card">
+            <div class="row-head"><div><h3>Priority stack</h3><p class="muted">Click any account to open its workspace. Priority weights renewal timing, trigger strength, opportunity score, exec coverage, and risk.</p></div><span class="pill">Hover model</span></div>
+            <div class="list">${accounts.slice(0,8).map((a,i)=>priorityRow(a,i)).join('')}</div>
+          </div>
+          <div class="card" style="background:var(--blue-50);border-color:#bfdbfe">
+            <p class="eyebrow">AI AE assistant</p>
+            <h3>Ask, plan, or create a reminder</h3>
+            <textarea id="coachText" rows="4" placeholder="Ask: What should I prioritize today? Create a renewal reminder..."></textarea>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+              ${['What should I do first today?','Check quota coverage','Create renewal reminder','Which account has risk?'].map(q=>`<button class="btn secondary" onclick="askCoach('${q}')">${q}</button>`).join('')}
+            </div>
+            <button class="btn" style="margin-top:10px" onclick="askCoach(document.getElementById('coachText').value)">Ask assistant</button>
+            <div class="row" style="margin-top:12px"><strong>Assistant answer</strong><p id="coachAnswer">Start with the highest renewal-timed account, confirm the decision owner, and turn the next meeting into a clean discovery outcome.</p></div>
+          </div>
+        </div>
+        <div class="grid two-col" style="margin-top:16px">
+          <div class="card"><h3>Today's reminders</h3><div class="list">${['Prep Toast COO discovery before renewal call.','Send partner note for AppFolio workflow proof.','Validate Upwork decision owner and technical owner.'].map(x=>`<div class="row">${x}</div>`).join('')}</div></div>
+          <div class="card"><h3>Operating dashboard</h3><div class="grid grid-3" style="margin-top:14px"><div class="row"><strong>Renewals</strong><p>${renewalAccounts.length} watch</p></div><div class="row"><strong>Discovery</strong><p>13 active</p></div><div class="row"><strong>Coverage</strong><p>7 strong</p></div></div></div>
+        </div>`;
+    }
+
+    function priorityRow(a,i) {
+      return `<button class="row clickable" onclick="openAccount('${a.id}')" title="Priority model: renewal timing, trigger strength, opportunity score, executive coverage, and risk.">
+        <div class="row-head"><div><strong>#${i+1} ${a.name}</strong><p class="muted">${a.industry} - renewal ${a.renewal}</p></div><span class="pill">${a.priority}/100</span></div>
+      </button>`;
+    }
+
+    function renderAccounts(list=accounts) {
+      document.getElementById('accounts').innerHTML = `
+        <div class="card"><p class="eyebrow">Accounts</p><h2>Portfolio account list</h2><p>Generic industry labels make the demo easier to scan. Open an account to see MCEM, personas, renewal, partners, and AI coaching.</p></div>
+        <div class="card" style="margin-top:16px"><table class="table"><thead><tr><th>Rank</th><th>Account</th><th>Industry</th><th>Renewal</th><th>License</th><th>Score</th><th></th></tr></thead><tbody>
+        ${list.map((a,i)=>`<tr><td>#${i+1}</td><td><strong>${a.name}</strong><br><span class="muted">${a.trigger}</span></td><td>${a.industry}</td><td>${a.renewal}</td><td>${a.current}<br><span class="muted">${a.seats} seats</span></td><td>${a.priority}</td><td><button class="btn" onclick="openAccount('${a.id}')">Open</button></td></tr>`).join('')}
+        </tbody></table></div>`;
+    }
+
+    function renderAccount() {
+      const a = activeAccount;
+      document.getElementById('account').innerHTML = `
+        <div class="account-tabs">
+          <button class="tab-btn" onclick="showPage('home')">Portfolio</button>
+          <button class="tab-btn active">${a.name}</button>
+        </div>
+        <div class="card compact" style="margin-bottom:14px"><div class="grid grid-4"><div><p class="eyebrow">Company</p><strong>${a.name}</strong></div><div><p class="eyebrow">Industry</p><strong>${a.industry}</strong></div><div><p class="eyebrow">Motion</p><strong>${a.current} to ${a.target}</strong></div><div><p class="eyebrow">Trigger</p><strong style="color:var(--orange)">${a.trigger.includes('1') ? '9' : '8'}/10</strong></div></div></div>
+        <div class="account-tabs">${[
+          ['dashboard','Dashboard'],['stage1','Stage 1: Listen & Consult'],['stage2','Stage 2: Inspire & Design'],['stage3','Stage 3: Empower & Achieve'],['stage4','Stage 4: Realize Value'],['stage5','Stage 5: Manage & Optimize'],['personas','Personas'],['summary','Executive Summary'],['vteam','V-Team Plan'],['partners','Partners']
+        ].map(([id,label])=>`<button class="tab-btn ${activeStage===id?'active':''}" onclick="setStage('${id}')">${label}</button>`).join('')}</div>
+        <div id="accountStage"></div>`;
+      renderStage();
+    }
+
+    function setStage(stage) { activeStage = stage; renderAccount(); }
+
+    function renderStage() {
+      const a = activeAccount;
+      const el = document.getElementById('accountStage');
+      if (activeStage === 'dashboard') {
+        el.innerHTML = `
+          <div class="grid two-col">
+            <div class="card">
+              <p class="eyebrow">Discovery operating dashboard</p><h2>${a.name}</h2><p>Public-company-inspired SMB/Channels account used for AE portfolio planning and discovery demonstration.</p>
+              <div class="grid grid-4" style="margin-top:18px">
+                <button class="metric" onclick="alert('Discovery readiness: account completeness, stakeholder coverage, pain clarity, business priority alignment, trigger urgency, objections, and next step clarity.')"><strong>${a.discovery}</strong><span>Discovery readiness</span><small>View details</small></button>
+                <button class="metric green" onclick="alert('Opportunity score: Microsoft motion fit, add-on signal strength, renewal timing, executive sponsor clarity, and V-Team fit.')"><strong>${a.opportunity}</strong><span>Opportunity score</span><small>View details</small></button>
+                <button class="metric orange" onclick="alert('Risk score: unresolved objections, unclear procurement, missing economic buyer, no next meeting, or weak urgency.')"><strong>${a.risk}</strong><span>Risk score</span><small>View details</small></button>
+                <button class="metric purple" onclick="alert('Stakeholders mapped: CEO, CFO, CIO, COO, CISO. Use Stage 1 to deepen each persona.')"><strong>${a.stakeholders.length}</strong><span>Stakeholders mapped</span><small>View details</small></button>
+              </div>
+              ${companyBrief(a)}
+            </div>
+            <div class="card">
+              <h3>Active Trigger</h3><p class="muted">Updated Jun 2, 2026</p><div class="bar orange"><span style="width:${a.trigger.includes('1 quarter')?90:80}%"></span></div><p>${a.trigger}</p>
+              <span class="pill">Product release</span> <span class="pill">Renewal / procurement</span> <span class="pill">Leadership priority</span>
+              <button class="btn orange" style="margin-top:14px" onclick="openNewsDetail('${a.id}')">View trigger details</button>
+            </div>
+          </div>
+          ${renewalTile(a)}
+          <div class="grid grid-3" style="margin-top:16px">
+            <div class="card"><h3>Discovery Scorecard</h3>${scoreBars([['Account completeness',14],['Stakeholder coverage',13],['Pain clarity',14],['Trigger urgency',12],['Next step clarity',9]])}</div>
+            <div class="card"><h3>Top Add-On Fit</h3>${a.addOns.map(o=>scoreBar(o.name,o.score,'green',o.use)).join('')}</div>
+            <div class="card"><h3>Next Best Actions</h3><div class="list">${a.nextSteps.map(x=>`<div class="row">${x}</div>`).join('')}</div></div>
+          </div>`;
+      } else if (activeStage === 'stage1') {
+        el.innerHTML = stage1(a);
+      } else if (['stage2','stage3','stage4','stage5'].includes(activeStage)) {
+        el.innerHTML = construction(activeStage);
+      } else if (activeStage === 'personas') {
+        el.innerHTML = personasPage(a);
+      } else if (activeStage === 'summary') {
+        el.innerHTML = summaryPage(a);
+      } else if (activeStage === 'vteam') {
+        el.innerHTML = accountVTeam(a);
+      } else if (activeStage === 'partners') {
+        el.innerHTML = accountPartners(a);
+      }
+    }
+
+    function companyBrief(a) {
+      const bullets = [
+        ['Who they are',`${a.name} is a ${a.industry} account in this SMB/Channels portfolio view.`],
+        ['Why it matters','Public-company-inspired training account for discovery planning and executive storytelling.'],
+        ['Discovery history',a.notes],
+        ['Likely buyer concerns',a.pains.join(', ')],
+        ['Current environment',a.tools.join(', ')],
+        ['People to know',a.stakeholders.map(s=>s.role).join(', ')],
+        ['Renewal context',`${a.renewal} renewal window, ${a.seats} seats, Jordan Lee CFO as current decision owner signal.`],
+        ['Microsoft angle',`${a.current} to ${a.target}; strongest fit signals: ${a.addOns.slice(0,3).map(o=>o.name).join(', ')}.`]
+      ];
+      return `<div class="card compact" style="margin-top:18px;background:var(--blue-50);border-color:#bfdbfe;box-shadow:none"><h3>Company brief</h3><p class="muted">Quick context to read before the AE starts discovery.</p><div class="brief-scroll list">${bullets.map(([k,v])=>`<div class="row" style="background:white"><p class="eyebrow">${k}</p><strong>${v}</strong></div>`).join('')}</div></div>`;
+    }
+
+    function renewalTile(a) {
+      return `<div class="card" style="margin-top:16px">
+        <p class="eyebrow">Renewal and license snapshot</p><h3>${a.name} renewal planning view</h3><p>Planning prices show demo list-price cues where a per-user SKU applies. Capacity, usage, and plan-dependent SKUs are flagged for validation before any customer-facing quote.</p>
+        <div class="grid grid-3"><div class="row"><strong>Renewal</strong><p>${a.renewal}</p></div><div class="row"><strong>Current license</strong><p>Microsoft 365 ${a.current.replace('ME','E')}</p></div><div class="row"><strong>Licenses</strong><p>${a.seats}</p></div></div>
+        <div class="row" style="margin-top:14px;background:var(--blue-50)"><h4>Renewal control plan</h4><div class="grid grid-3" style="margin-top:12px">${[
+          ['What',`Microsoft 365 ${a.current.replace('ME','E')} to ${a.target}`],['When',a.renewal],['Who','Jordan Lee, CFO'],['How',a.nextSteps[0]],['Seats',a.seats],['Price cue',a.price],['Procurement','Known'],['Business case','Needed'],['Technical owner','Casey Patel, CIO']
+        ].map(([k,v])=>`<div class="row" style="background:white"><p class="eyebrow">${k}</p><strong>${v}</strong></div>`).join('')}</div></div>
+        <table class="table"><thead><tr><th>SKU</th><th>Type</th><th>Seats</th><th>Planning price / SKU</th><th>Discovery use</th></tr></thead><tbody>
+        <tr><td>Microsoft 365 ${a.current.replace('ME','E')}</td><td>Current base license</td><td>${a.seats}</td><td>${a.price}</td><td>Current productivity and security baseline</td></tr>
+        ${a.addOns.slice(0,3).map(o=>`<tr><td>${o.name}</td><td>Discovery fit add-on</td><td>${a.seats}</td><td>${o.name==='Copilot'?'$30/user/month':'Validate by plan'}</td><td>${o.use}</td></tr>`).join('')}
+        </tbody></table></div>`;
+    }
+
+    function stage1(a) {
+      return `<div class="card"><p class="eyebrow">MCEM Stage 1</p><h2>Listen & Consult</h2><p>Work from stakeholder cards. Open a persona to run the live discovery guide with 7 levels and yes/no branching.</p></div>
+      <div class="grid two-col" style="margin-top:16px"><div class="card"><h3>Stakeholder cards</h3><div class="list">${a.stakeholders.map(s=>`<button class="row clickable" onclick="openPersona('${s.role}')"><div class="row-head"><div><strong>${s.name}</strong><p class="muted">${s.role} - ${s.influence}</p></div><span class="pill">${impactScore(s.role)}</span></div><p>Persona lens: ${personaLens(s.role)}</p></button>`).join('')}</div></div>
+      <div class="card"><h3>What updates from this conversation</h3><textarea rows="7" placeholder="Capture what they said, keywords, objections, proof needed, and next step..."></textarea><div class="grid grid-2" style="margin-top:12px"><button class="btn green">Save summary</button><button class="btn secondary" onclick="openPersona('COO')">Open selected discovery</button></div><h4 style="margin-top:16px">Simple next step</h4><p>Confirm the business owner, decision path, proof needed, and next meeting outcome.</p></div></div>`;
+    }
+
+    function construction(stage) {
+      const names = { stage2:'Stage 2: Inspire & Design', stage3:'Stage 3: Empower & Achieve', stage4:'Stage 4: Realize Value', stage5:'Stage 5: Manage & Optimize' };
+      return `<div class="construction"><h2>${names[stage]} is under construction</h2><p>This page is the next part of the operating model. For the demo, use Stage 1 to show the live persona discovery guide, then use Executive Summary, V-Team Plan, and Partners to show how discovery becomes action.</p><button class="btn green" onclick="setStage('stage1')">Go to Stage 1 persona discovery -></button></div>`;
+    }
+
+    function personasPage(a) {
+      return `<div class="card"><p class="eyebrow">Persona library</p><h2>Account personas</h2><p>Each persona combines universal role guidance with account-specific notes, keywords, pains, and discovery history.</p></div><div class="grid grid-3" style="margin-top:16px">${personas.map(p=>`<button class="row clickable" onclick="openPersona('${p.role}')"><strong>${p.role}</strong><p>${p.lens}</p><p class="muted">Account keywords: ${a.keywords.slice(0,2).join(', ')}</p></button>`).join('')}</div>`;
+    }
+
+    function summaryPage(a) {
+      return `<div class="card"><p class="eyebrow">Executive Summary</p><h2>${a.name}: Discovery narrative</h2><p>${a.name} shows strong signals around ${a.pains.join(', ').toLowerCase()}. The current motion is ${a.current} with a path toward ${a.target}. Renewal timing is ${a.renewal}, with ${a.seats} licenses and ${a.price} as the current planning cue.</p><h3>Updated executive readout</h3><div class="list">${['Customer priority: reduce friction and improve decision confidence.','Primary stakeholders: CFO economic buyer, CIO technical owner, COO business owner.','Recommended motion: validate business outcome, then attach specialist and partner support.','Next step: run MCEM discovery workshop and produce customer-ready recap.'].map(x=>`<div class="row">${x}</div>`).join('')}</div></div>`;
+    }
+
+    function accountVTeam(a) {
+      const people = [
+        ['AE','Own customer narrative, confirm next step, and keep the executive summary current.'],
+        ['Modern Work SSP','Translate productivity pain into Copilot and Teams discovery outcomes.'],
+        ['Technical Specialist','Validate architecture, integration, security, and proof path.'],
+        ['Partner Lead','Attach partner capacity for workshop, demo, deployment, or adoption package.'],
+        ['Executive Sponsor Coach','Turn persona notes into CFO, COO, CIO, and CISO-ready language.']
+      ];
+      return `<div class="card"><p class="eyebrow">V-Team plan</p><h2>Team to activate for ${a.name}</h2><div class="list">${people.map(([r,v])=>`<div class="row"><strong>${r}</strong><p>${v}</p></div>`).join('')}</div></div>`;
+    }
+
+    function accountPartners(a) {
+      return `<div class="card"><p class="eyebrow">Partner planner</p><h2>Partner motions for ${a.name}</h2><p>Suggested based on discovery responses, renewal timing, add-on fit, and implementation risk.</p></div><div class="grid grid-2" style="margin-top:16px">${partners.slice(0,4).map(p=>partnerCard(p,true)).join('')}</div>`;
+    }
+
+    function renderVTeam() {
+      document.getElementById('vteam').innerHTML = `<div class="card"><p class="eyebrow">V-Team Dashboard</p><h2>Internal Microsoft coverage planner</h2><p>Plan specialists, demos, workshops, executive coaching, and follow-through across the portfolio.</p></div><div class="grid grid-3" style="margin-top:16px">${['Modern Work SSP','Security SSP','Data and AI Specialist','Copilot TS','CSAM','Partner Lead'].map((r,i)=>`<div class="card"><h3>${r}</h3><p>${['Copilot discovery and adoption path','Risk, identity, and endpoint proof','Fabric, Power BI, and reporting trust','Copilot demo and prompt journey','Success plan and adoption health','Partner demo and delivery capacity'][i]}</p><span class="pill">${i<4?'Active':'Watch'}</span></div>`).join('')}</div>`;
+    }
+
+    function renderPartners() {
+      document.getElementById('partners').innerHTML = `<div class="card"><p class="eyebrow">Partners</p><h2>Partner ecosystem planner</h2><p>Manage partner profiles, partner attach, NDA/demo readiness, and outreach next steps.</p></div><div class="grid grid-2" style="margin-top:16px">${partners.map(p=>partnerCard(p,false)).join('')}</div>`;
+    }
+
+    function partnerCard(p, withActions) {
+      return `<div class="card"><div class="row-head"><div><h3>${p.name}</h3><p class="muted">${p.type}</p></div><span class="pill">${p.fit}% fit</span></div><p>${p.value}</p><p><strong>Owner:</strong> ${p.owner}</p><p><strong>Accounts:</strong> ${p.accounts.join(', ')}</p>${withActions ? `<div class="grid grid-3"><button class="btn secondary">NDA check</button><button class="btn secondary">Schedule demo</button><button class="btn secondary">Email partner</button></div>` : ''}</div>`;
+    }
+
+    function renderNews() {
+      document.getElementById('news').innerHTML = `<div class="card"><p class="eyebrow">News Center</p><h2>Account and partner intelligence</h2><p>Signals that should change the next AE action.</p></div><div class="list" style="margin-top:16px">${newsSignals.map(n=>`<div class="card"><span class="pill">${n.type}</span> <span class="pill">Partner: ${n.partner}</span><h3 style="margin-top:12px">${n.headline}</h3><p>${n.action}</p><button class="btn" onclick="openAccount('${accounts.find(a=>a.name===n.account)?.id || accounts[0].id}')">Open ${n.account} -></button></div>`).join('')}</div>`;
+    }
+
+    function renderCoach() {
+      document.getElementById('coach').innerHTML = `<div class="card"><p class="eyebrow">AI Coaching Assistant</p><h2>Personalized AE coach</h2><p>Use it to prep for a stakeholder, summarize discovery, create reminders, or generate next-best questions.</p><textarea id="coachPageText" rows="5" placeholder="Ask about an account, persona, renewal, partner, or next step..."></textarea><button class="btn" style="margin-top:10px" onclick="askCoach(document.getElementById('coachPageText').value,'coachPageAnswer')">Ask assistant</button><div class="row" style="margin-top:12px"><p id="coachPageAnswer">Try: How should I prep for the CFO at ${activeAccount.name}?</p></div></div>`;
+    }
+
+    function renderCommandCenter() {
+      const a = activeAccount;
+      document.getElementById('commandCenter').innerHTML = `
+        <div class="card"><p class="eyebrow">Active account</p><strong>${a.name}</strong><p>${a.target}</p></div>
+        <div class="card"><p class="eyebrow">If the meeting ended now</p><p>${a.name} shows discovery momentum around ${a.pains.join(', ').toLowerCase()}. Current best next step is ${a.nextSteps[0].toLowerCase()}.</p></div>
+        <div class="card"><h4>Scores</h4>${scoreBar('Discovery readiness',a.discovery,'blue')}${scoreBar('Opportunity score',a.opportunity,'green')}${scoreBar('Risk score',a.risk,'orange')}</div>
+        <div class="card"><h4>Keyword tally</h4>${a.keywords.concat(a.pains).slice(0,6).map(k=>`<span class="pill">${k} x1</span>`).join(' ')}</div>`;
+    }
+
+    function openRenewalModal() {
+      const list = accounts.filter(a=>/1 quarter|2 quarters|6 months/i.test(a.renewal)).sort((a,b)=>b.priority-a.priority).slice(0,10);
+      document.getElementById('renewalModal').innerHTML = modalShell('Renewal command popout','Top 10 renewal accounts to control now',`
+        <div class="list">${list.map((a,i)=>`<div class="row"><div class="row-head"><div><p class="eyebrow">#${i+1} renewal priority</p><h3>${a.name}</h3><p>${a.industry}</p></div><button class="btn" onclick="closeModal('renewalModal');openAccount('${a.id}')">Open account -></button></div><div class="grid grid-3">${[
+          ['What',`Microsoft 365 ${a.current.replace('ME','E')} to ${a.target}`],['When',a.renewal],['Who','Jordan Lee, CFO'],['How',a.nextSteps[0]],['Price cue',a.price],['Seats',a.seats]
+        ].map(([k,v])=>`<div class="row" style="background:white"><p class="eyebrow">${k}</p><strong>${v}</strong></div>`).join('')}</div></div>`).join('')}</div>`);
+      openModal('renewalModal');
+    }
+
+    function openAccountList() {
+      document.getElementById('accountListModal').innerHTML = modalShell('List of accounts','Open an account workspace',`<div class="grid grid-2">${accounts.map(a=>`<button class="row clickable" onclick="closeModal('accountListModal');openAccount('${a.id}')"><strong>${a.name}</strong><p>${a.industry} - ${a.renewal}</p><span class="pill">${a.priority}/100</span></button>`).join('')}</div>`);
+      openModal('accountListModal');
+    }
+
+    function openPersona(role) {
+      const p = personas.find(x=>role.includes(x.role)) || personas.find(x=>x.role==='COO');
+      const levels = ['Executive Outcome','Current State','Pain Evidence','Impact Translation','Decision Path','Microsoft Mapping','Mutual Action Plan'];
+      document.getElementById('personaModal').innerHTML = modalShell(`${p.role} persona discovery`,p.lens,`
+        <div class="persona-switcher">${personas.map(x=>`<button class="btn secondary" onclick="openPersona('${x.role}')">${x.role}</button>`).join('')}</div>
+        <div class="grid two-col" style="margin-top:16px">
+          <div>${levels.map((lvl,i)=>`<div class="question"><p class="eyebrow">Level ${i+1}: ${lvl}</p><h4>${i===0?p.question:branchQuestion(p.role,lvl)}</h4><p class="muted">Example: "We need clearer ownership, less manual reporting, and a proof path before we ask finance to approve."</p><div style="display:flex;gap:8px;flex-wrap:wrap">${['Yes','Yes and...','It depends','No','No and...','Pause branching'].map(x=>`<button class="btn secondary" onclick="addBranch('${x}')">${x}</button>`).join('')}</div></div>`).join('')}</div>
+          <div class="card" style="box-shadow:none"><h3>Live executive summary</h3><p id="liveSummary">Based on the conversation so far, the ${p.role} cares about ${p.lens.toLowerCase()}. Capture answers and pause branching when the information is enough.</p><h4>Suggested V-Team</h4><div class="list">${['AE','Modern Work SSP','Technical Specialist','Partner Lead','Executive Sponsor Coach'].map(x=>`<div class="row">${x}</div>`).join('')}</div><h4 style="margin-top:14px">Next steps</h4><div class="list">${['Schedule persona follow-up','Confirm proof needed','Update executive summary','Attach partner or specialist'].map(x=>`<div class="row">${x}</div>`).join('')}</div></div>
+        </div>`);
+      openModal('personaModal');
+    }
+
+    function modalShell(eyebrow,title,body) {
+      return `<div class="modal-card"><div class="modal-head"><div><p class="eyebrow">${eyebrow}</p><h2>${title}</h2></div><button class="close" onclick="this.closest('.modal').classList.remove('open')">x</button></div><div class="modal-body">${body}</div></div>`;
+    }
+    function openModal(id){ document.getElementById(id).classList.add('open'); }
+    function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+    function openNewsDetail(id){ alert(`${activeAccount.name} trigger detail: ask why this matters now, who owns the outcome, what proof is needed, and what happens before renewal.`); }
+    function addBranch(mode){ document.getElementById('liveSummary').textContent = `Updated: stakeholder response was "${mode}". The AE should capture the keyword, clarify impact, and decide whether to branch deeper or move to mutual action plan.`; }
+    function branchQuestion(role,lvl){ return `For the ${role}, what does ${lvl.toLowerCase()} need to prove before this can move forward?`; }
+    function personaLens(role){ return (personas.find(p=>role.includes(p.role)) || personas[2]).lens; }
+    function impactScore(role){ return role.includes('CFO') ? 'Money 94' : role.includes('CIO') ? 'Tech 88' : role.includes('CEO') ? 'Exec 91' : 'Impact 82'; }
+    function scoreBars(items){ return items.map(([l,v])=>scoreBar(l,v,'blue')).join(''); }
+    function scoreBar(label,value,tone='blue',detail=''){ return `<div style="margin:12px 0"><div class="row-head"><strong>${label}</strong><strong>${value}</strong></div><div class="bar ${tone}"><span style="width:${value}%"></span></div>${detail?`<p class="muted">${detail}</p>`:''}</div>`; }
+    function askCoach(prompt,target='coachAnswer'){ const text = prompt || 'What should I do first today?'; const answer = text.toLowerCase().includes('quota') ? 'Quota view: $50M annual target. Focus on renewal-timed accounts with strong executive signal.' : text.toLowerCase().includes('reminder') ? 'Reminder created: confirm stakeholder owner, renewal path, and customer-ready next step today.' : `Start with ${accounts[0].name}: validate the money decision maker, technical owner, renewal path, and next proof step.`; document.getElementById(target).textContent = answer; }
+    function searchAccounts(value){ const q=value.toLowerCase(); if(!q){ renderAccounts(); return; } renderAccounts(accounts.filter(a => [a.name,a.industry,a.target,a.renewal,...a.pains,...a.keywords].join(' ').toLowerCase().includes(q))); showPage('accounts'); }
+
+    render();
+  </script>
+</body>
 </html>
